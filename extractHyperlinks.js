@@ -1,23 +1,28 @@
 function extractHyperlinks(doc) {
     "use strict";
     var i,
-      linkedText, // The source text
-      linkedURL, // The URL destination
-      extracted_hyperlinks = [], // The array of hyperlinks
-      myHyperlinks = doc.hyperlinks, // The hyperlinks in the given document
-      extracted_hyperlink; // Individual extracted hyperlink
+	    linkedText,
+		linkedURL,
+        extracted_hyperlinks = [],
+        myHyperlinks = doc.hyperlinks,
+        extracted_hyperlink,
+        destination_type;
     for (i = 0; i < myHyperlinks.length; i += 1) {
 	    // If you don't do the following check to make sure the objects exist and are not null, the script will break when there isnt a source or destination available.
         if (myHyperlinks.item(i).source.sourceText && myHyperlinks.item(i).destination) {
-            linkedText = myHyperlinks.item(i).source.sourceText.contents || ""; // extract linked text
-            linkedURL = myHyperlinks.item(i).destination.destinationURL || ""; // extract destination URL
+            linkedText = myHyperlinks.item(i).source.sourceText.contents || ""; //extract linked text
+            for (destination_type in myHyperlinks.item(i).destination) {
+                if (myHyperlinks.item(i).destination.hasOwnProperty(destination_type) && destination_type.toString().match('destination.*')) {
+                    linkedURL = myHyperlinks.item(i).destination[destination_type] || "";
+                    break;
+                }
+            }
         }
-        // Merge information in hyperlink object
 		extracted_hyperlink = {
 			text: linkedText,
 			URL: linkedURL
 		};
-        extracted_hyperlinks.push(extracted_hyperlink); // Push to hyperlink array
+        extracted_hyperlinks.push(extracted_hyperlink);
     }
     return extracted_hyperlinks;
 }
@@ -25,13 +30,13 @@ function extractHyperlinks(doc) {
 
 function writeHyperlinksToFile(hyperlinks) {
     "use strict";
-    var myFilePath = File.openDialog("Choose where to save your Hyperlinks"),
+    var myFilePath = File.saveDialog("Choose where to save your Hyperlinks"),
         outputFile = new File(myFilePath),
         i;
     outputFile = new File(outputFile);
     outputFile.open('w');
     for (i = 0; i < hyperlinks.length; i += 1) {
-        outputFile.writeln(hyperlinks[i].text + "\t" + hyperlinks[i].URL); // tab-delimited text, URL
+        outputFile.writeln(hyperlinks[i].text + "\t" + hyperlinks[i].URL);
     }
     outputFile.close();
 }
